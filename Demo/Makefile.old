@@ -2,7 +2,7 @@
 # Automatically-generated file. Do not edit!
 ################################################################################
 
--include ../makefile.init
+#-include ../makefile.init
 
 RM := rm -rf
 
