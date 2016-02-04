@@ -11,7 +11,7 @@ RM := rm -rf
 -include subdir.mk
 -include Source/subdir.mk
 -include Source/portable/MemMang/subdir.mk
--include Source/portable/GCC/ARM_Cortex-A9/subdir.mk
+-include Source/portable/GCC/ARM_Cortex-A15/subdir.mk
 -include Demo/subdir.mk
 -include Demo/Common/Minimal/subdir.mk
 -include objects.mk
@@ -32,47 +32,47 @@ endif
 
 # Add inputs and outputs from these tool invocations to the build variables
 SECONDARY_FLASH += \
-/home/wonseok/work/guestos/freertos/FreeRTOS_ARM_Cortex-A9.hex \
+/home/wonseok/work/guestos/freertos/FreeRTOS_FVP_VE_Cortex-A15.hex \
 
 SECONDARY_LIST += \
-/home/wonseok/work/guestos/freertos/FreeRTOS_ARM_Cortex-A9.lst \
+/home/wonseok/work/guestos/freertos/FreeRTOS_FVP_VE_Cortex-A15.lst \
 
 SECONDARY_SIZE += \
-/home/wonseok/work/guestos/freertos/FreeRTOS_ARM_Cortex-A9.siz \
+/home/wonseok/work/guestos/freertos/FreeRTOS_FVP_VE_Cortex-A15.siz \
 
 
 # All Target
-all: /home/wonseok/work/guestos/freertos/FreeRTOS_ARM_Cortex-A9.elf secondary-outputs
+all: /home/wonseok/work/guestos/freertos/FreeRTOS_FVP_VE_Cortex-A15.elf secondary-outputs
 
 # Tool invocations
-/home/wonseok/work/guestos/freertos/FreeRTOS_ARM_Cortex-A9.elf: $(OBJS) $(USER_OBJS)
+/home/wonseok/work/guestos/freertos/FreeRTOS_FVP_VE_Cortex-A15.elf: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: ARM Sourcery Windows GCC C Linker'
-	arm-none-eabi-gcc -T"../Demo/generic.ld" -nostartfiles -L"/home/wonseok/experiment/arm-2013.05/arm-none-eabi/lib" -Wl,-Map,/home/wonseok/work/guestos/freertos/FreeRTOS_ARM_Cortex-A9.map --entry Vector_Init -mcpu=cortex-a9 -g3 -gdwarf-2 -o"/home/wonseok/work/guestos/freertos/FreeRTOS_ARM_Cortex-A9.elf" $(OBJS) $(USER_OBJS) $(LIBS)
+	arm-none-eabi-gcc -T"../Demo/generic.ld" -nostartfiles -L"/home/wonseok/experiment/arm-2013.05/arm-none-eabi/lib" -Wl,-Map,/home/wonseok/work/guestos/freertos/FreeRTOS_FVP_VE_Cortex-A15.map --entry Vector_Init -mcpu=cortex-a15 -g3 -gdwarf-2 -o"/home/wonseok/work/guestos/freertos/FreeRTOS_FVP_VE_Cortex-A15.elf" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
-/home/wonseok/work/guestos/freertos/FreeRTOS_ARM_Cortex-A9.hex: /home/wonseok/work/guestos/freertos/FreeRTOS_ARM_Cortex-A9.elf
+/home/wonseok/work/guestos/freertos/FreeRTOS_FVP_VE_Cortex-A15.hex: /home/wonseok/work/guestos/freertos/FreeRTOS_FVP_VE_Cortex-A15.elf
 	@echo 'Invoking: ARM Sourcery Windows GNU Create Flash Image'
-	arm-none-eabi-objcopy -O binary /home/wonseok/work/guestos/freertos/FreeRTOS_ARM_Cortex-A9.elf "/home/wonseok/work/guestos/freertos/FreeRTOS_ARM_Cortex-A9.hex"
+	arm-none-eabi-objcopy -O binary /home/wonseok/work/guestos/freertos/FreeRTOS_FVP_VE_Cortex-A15.elf "/home/wonseok/work/guestos/freertos/FreeRTOS_FVP_VE_Cortex-A15.hex"
 	@echo 'Finished building: $@'
 	@echo ' '
 
-/home/wonseok/work/guestos/freertos/FreeRTOS_ARM_Cortex-A9.lst: /home/wonseok/work/guestos/freertos/FreeRTOS_ARM_Cortex-A9.elf
+/home/wonseok/work/guestos/freertos/FreeRTOS_FVP_VE_Cortex-A15.lst: /home/wonseok/work/guestos/freertos/FreeRTOS_FVP_VE_Cortex-A15.elf
 	@echo 'Invoking: ARM Sourcery Windows GNU Create Listing'
-	arm-none-eabi-objdump -h -S /home/wonseok/work/guestos/freertos/FreeRTOS_ARM_Cortex-A9.elf >"/home/wonseok/work/guestos/freertos/FreeRTOS_ARM_Cortex-A9.lst"
+	arm-none-eabi-objdump -h -S /home/wonseok/work/guestos/freertos/FreeRTOS_FVP_VE_Cortex-A15.elf >"/home/wonseok/work/guestos/freertos/FreeRTOS_FVP_VE_Cortex-A15.lst"
 	@echo 'Finished building: $@'
 	@echo ' '
 
-/home/wonseok/work/guestos/freertos/FreeRTOS_ARM_Cortex-A9.siz: /home/wonseok/work/guestos/freertos/FreeRTOS_ARM_Cortex-A9.elf
+/home/wonseok/work/guestos/freertos/FreeRTOS_FVP_VE_Cortex-A15.siz: /home/wonseok/work/guestos/freertos/FreeRTOS_FVP_VE_Cortex-A15.elf
 	@echo 'Invoking: ARM Sourcery Windows GNU Print Size'
-	arm-none-eabi-size  --format=berkeley /home/wonseok/work/guestos/freertos/FreeRTOS_ARM_Cortex-A9.elf
+	arm-none-eabi-size  --format=berkeley /home/wonseok/work/guestos/freertos/FreeRTOS_FVP_VE_Cortex-A15.elf
 	@echo 'Finished building: $@'
 	@echo ' '
 
 # Other Targets
 clean:
-	-$(RM) $(SECONDARY_SIZE)$(OBJS)$(C_DEPS)$(ASM_DEPS)$(SECONDARY_FLASH)$(EXECUTABLES)$(SECONDARY_LIST)$(S_UPPER_DEPS) /home/wonseok/work/guestos/freertos/FreeRTOS_ARM_Cortex-A9.*
+	-$(RM) $(SECONDARY_SIZE)$(OBJS)$(C_DEPS)$(ASM_DEPS)$(SECONDARY_FLASH)$(EXECUTABLES)$(SECONDARY_LIST)$(S_UPPER_DEPS) /home/wonseok/work/guestos/freertos/FreeRTOS_FVP_VE_Cortex-A15.*
 	find . -name '*.o.lst' -exec rm {} \;
 	-@echo ' '
 

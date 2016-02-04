@@ -1,6 +1,6 @@
 /*
     FreeRTOS V7.0.1 - Copyright (C) 2011 Real Time Engineers Ltd.
-	
+
 
     ***************************************************************************
      *                                                                       *
@@ -119,16 +119,19 @@ static xQueueHandle xPolledQueue;
 	xPolledQueue = xQueueCreate( pollqQUEUE_SIZE, ( unsigned portBASE_TYPE ) sizeof( unsigned short ) );
 
 	/* vQueueAddToRegistry() adds the queue to the queue registry, if one is
-	in use.  The queue registry is provided as a means for kernel aware 
+	in use.  The queue registry is provided as a means for kernel aware
 	debuggers to locate queues and has no purpose if a kernel aware debugger
 	is not being used.  The call to vQueueAddToRegistry() will be removed
-	by the pre-processor if configQUEUE_REGISTRY_SIZE is not defined or is 
+	by the pre-processor if configQUEUE_REGISTRY_SIZE is not defined or is
 	defined to be less than 1. */
 	vQueueAddToRegistry( xPolledQueue, ( signed char * ) "Poll_Test_Queue" );
 
 	/* Spawn the producer and consumer. */
 	xTaskCreate( vPolledQueueConsumer, ( signed char * ) "QConsNB", pollqSTACK_SIZE, ( void * ) &xPolledQueue, uxPriority, ( xTaskHandle * ) NULL );
 	xTaskCreate( vPolledQueueProducer, ( signed char * ) "QProdNB", pollqSTACK_SIZE, ( void * ) &xPolledQueue, uxPriority, ( xTaskHandle * ) NULL );
+    char str[64];
+    sprintf( str, "[%s]: %d\r\n", __func__, __LINE__ );
+    vSerialPutString(configUART_PORT, str, strlen(str) );
 }
 /*-----------------------------------------------------------*/
 
@@ -136,9 +139,12 @@ static portTASK_FUNCTION( vPolledQueueProducer, pvParameters )
 {
 unsigned short usValue = ( unsigned short ) 0;
 signed portBASE_TYPE xError = pdFALSE, xLoop;
+    char str[64];
+    sprintf( str, "[%s]: %d\r\n", __func__, __LINE__ );
+    vSerialPutString(configUART_PORT, str, strlen(str) );
 
 	for( ;; )
-	{		
+	{
 		for( xLoop = 0; xLoop < pollqVALUES_TO_PRODUCE; xLoop++ )
 		{
 			/* Send an incrementing number on the queue without blocking. */
@@ -150,6 +156,7 @@ signed portBASE_TYPE xError = pdFALSE, xLoop;
 			}
 			else
 			{
+
 				if( xError == pdFALSE )
 				{
 					/* If an error has ever been recorded we stop incrementing the
@@ -175,14 +182,18 @@ static portTASK_FUNCTION( vPolledQueueConsumer, pvParameters )
 {
 unsigned short usData, usExpectedValue = ( unsigned short ) 0;
 signed portBASE_TYPE xError = pdFALSE;
+    char str[64];
+    sprintf( str, "[%s]: %d\r\n", __func__, __LINE__ );
+    vSerialPutString(configUART_PORT, str, strlen(str) );
 
 	for( ;; )
-	{		
+	{
 		/* Loop until the queue is empty. */
 		while( uxQueueMessagesWaiting( *( ( xQueueHandle * ) pvParameters ) ) )
 		{
 			if( xQueueReceive( *( ( xQueueHandle * ) pvParameters ), &usData, pollqNO_DELAY ) == pdPASS )
 			{
+
 				if( usData != usExpectedValue )
 				{
 					/* This is not what we expected to receive so an error has
@@ -221,6 +232,9 @@ signed portBASE_TYPE xError = pdFALSE;
 portBASE_TYPE xArePollingQueuesStillRunning( void )
 {
 portBASE_TYPE xReturn;
+    char str[64];
+    sprintf( str, "[%s]: %d\r\n", __func__, __LINE__ );
+    vSerialPutString(configUART_PORT, str, strlen(str) );
 
 	/* Check both the consumer and producer poll count to check they have both
 	been changed since out last trip round.  We do not need a critical section

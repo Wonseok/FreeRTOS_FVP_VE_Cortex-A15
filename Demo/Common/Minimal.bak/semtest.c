@@ -116,6 +116,9 @@ void vStartSemaphoreTasks( unsigned portBASE_TYPE uxPriority )
 {
 xSemaphoreParameters *pxFirstSemaphoreParameters, *pxSecondSemaphoreParameters;
 const portTickType xBlockTime = ( portTickType ) 100;
+    char str[64];
+    sprintf( str, "[%s]: %d\r\n", __func__, __LINE__ );
+    vSerialPutString(configUART_PORT, str, strlen(str) );
 
 	/* Create the structure used to pass parameters to the first two tasks. */
 	pxFirstSemaphoreParameters = ( xSemaphoreParameters * ) pvPortMalloc( sizeof( xSemaphoreParameters ) );
@@ -177,6 +180,9 @@ xSemaphoreParameters *pxParameters;
 volatile unsigned long *pulSharedVariable, ulExpectedValue;
 unsigned long ulCounter;
 short sError = pdFALSE, sCheckVariableToUse;
+    char str[64];
+    sprintf( str, "[%s]: %d\r\n", __func__, __LINE__ );
+    vSerialPutString(configUART_PORT, str, strlen(str) );
 
 	/* See which check variable to use.  sNextCheckVariable is not semaphore 
 	protected! */
@@ -267,6 +273,9 @@ portBASE_TYPE xAreSemaphoreTasksStillRunning( void )
 {
 static short sLastCheckVariables[ semtstNUM_TASKS ] = { 0 };
 portBASE_TYPE xTask, xReturn = pdTRUE;
+    char str[64];
+    sprintf( str, "[%s]: %d\r\n", __func__, __LINE__ );
+    vSerialPutString(configUART_PORT, str, strlen(str) );
 
 	for( xTask = 0; xTask < semtstNUM_TASKS; xTask++ )
 	{

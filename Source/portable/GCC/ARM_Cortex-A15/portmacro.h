@@ -115,11 +115,12 @@ extern void vPortClearInterruptMask(portBASE_TYPE);
 #define portTASK_FUNCTION_PROTO( vFunction, pvParameters ) void vFunction( void *pvParameters )
 #define portTASK_FUNCTION( vFunction, pvParameters ) void vFunction( void *pvParameters )
 
-#define portNOP() __asm volatile( "NOP" )
+//#define portNOP() __asm volatile( "NOP" )
+#define portNOP()
 
 /* The System Control Registers. */
-#define portSYSCTRL_ZERO_REG				( ( volatile unsigned long * ) 0x1C010000 )		/* realview-pbx-a9 */
-//#define portSYSCTRL_ONE_REG					( ( volatile unsigned long * ) 0x1001A000 )		/* realview-pbx-a9 */
+#define portSYSCTRL_ZERO_REG				( ( volatile unsigned long * ) 0x1C020000 )		/* realview-pbx-a9 */
+#define portSYSCTRL_ONE_REG					( ( volatile unsigned long * ) 0x1001A000 )		/* realview-pbx-a9 */
 #define portSYSCTRL_ZERO_TIMER0_ENABLE		( 0x00018000 )
 
 /* Peripheral Base. */
@@ -174,7 +175,8 @@ extern void vPortClearInterruptMask(portBASE_TYPE);
 #define portGIC_CPU_INTERRUPT_SOURCE_MASK	( 0x1C00UL )
 #define portGIC_VECTOR_MASK					( 0x3FFUL )
 
-/* Private Timers: SP 804 */
+#if 0
+/* Private Timers: Generic Timer */
 #define portSYSTICK_BASE				( 0x1C110000 )
 #define portSYSTICK_LOAD				( ( volatile unsigned long * ) ( portSYSTICK_BASE + 0x00 ) )
 #define portSYSTICK_VALUE				( ( volatile unsigned long * ) ( portSYSTICK_BASE + 0x04 ) )
@@ -192,13 +194,72 @@ extern void vPortClearInterruptMask(portBASE_TYPE);
 #define TIMER_CTRL_IE       (1 << 5)
 #define TIMER_CTRL_PERIODIC (1 << 6)
 #define TIMER_CTRL_ENABLE   (1 << 7)
+#endif
+/* Private Timers: Generic Timer */
+#define portSYSTICK_BASE				( 0x1C110000 )
+#define portSYSTICK_LOAD				( ( volatile unsigned long * ) ( portSYSTICK_BASE + 0x00 ) )
+#define portSYSTICK_VALUE				( ( volatile unsigned long * ) ( portSYSTICK_BASE + 0x04 ) )
+#define portSYSTICK_CONTROL				( ( volatile unsigned long * ) ( portSYSTICK_BASE + 0x08 ) )
+#define portSYSTICK_INTERRUPT_STATUS	( ( volatile unsigned long * ) ( portSYSTICK_BASE + 0x0C ) )
+#define portSYSTICK_CTRL_ENABLE_PERIODIC_INTERRUPTS			  ( 0x00000007 )
+#define portSYSTICK_PRESCALE			( 99 )		/* realview-pbx-a9 */
+//Secure Physical Timer event (ID 29 <= 16 + 13)
+#define portSYSTICK_VECTOR_ID			( 29 )
+
+#define GENERIC_TIMER_CTRL_ENABLE       (1 << 0)
+#define GENERIC_TIMER_CTRL_IMASK        (1 << 1)
+#define GENERIC_TIMER_CTRL_ISTATUS      (1 << 2)
+/* 100Mhz -> 1 count == 10ns at RTSM_VE_CA15, fast model */
+#define SCHED_TICK  1000
+#define CFG_CNTFRQ  100000000
+#define USEC        1000000
+#define COUNT_PER_USEC (CFG_CNTFRQ/USEC)
+
+#define read_cntfrq()           ({ unsigned int rval; asm volatile(\
+                                " mrc     p15, 0, %0, c14, c0, 0\n\t" \
+                                : "=r" (rval) : : "memory", "cc"); rval; })
+
+#define write_cntfrq(val)       asm volatile(\
+                                " mcr     p15, 0, %0, c14, c0, 0\n\t" \
+                                : : "r" ((val)) : "memory", "cc")
+
+#define read_cntpct()           ({ unsigned int v1, v2; asm volatile(\
+                                " mrrc     p15, 0, %0, %1, c14\n\t" \
+                                : "=r" (v1), "=r" (v2) : : "memory", "cc"); \
+                                (((unsigned long long)v2 << 32) + (unsigned long long)v1); })
+
+#define read_cntkctl()          ({ unsigned int rval; asm volatile(\
+                                " mrc     p15, 0, %0, c14, c1, 0\n\t" \
+                                : "=r" (rval) : : "memory", "cc"); rval; })
+
+#define write_cntkctl(val)      asm volatile(\
+                                " mcr     p15, 0, %0, c14, c1, 0\n\t" \
+                                : : "r" ((val)) : "memory", "cc")
+
+#define read_cntp_tval()        ({ unsigned int rval; asm volatile(\
+                                " mrc     p15, 0, %0, c14, c2, 0\n\t" \
+                                : "=r" (rval) : : "memory", "cc"); rval; })
+
+#define write_cntp_tval(val)    asm volatile(\
+                                " mcr     p15, 0, %0, c14, c2, 0\n\t" \
+                                : : "r" ((val)) : "memory", "cc")
+
+#define read_cntp_ctl()         ({ unsigned int rval; asm volatile(\
+                                " mrc     p15, 0, %0, c14, c2, 1\n\t" \
+                                : "=r" (rval) : : "memory", "cc"); rval; })
+
+#define write_cntp_ctl(val)     asm volatile(\
+                                " mcr     p15, 0, %0, c14, c2, 1\n\t" \
+                                : : "r" ((val)) : "memory", "cc")
+
+
 
 /* SGI for Yielding Task. */
 #define portSGI_YIELD_VECTOR_ID			( 1 )
 #define portSGI_YIELD( xCPUID )			( ( 0 << 24 ) | ( ( 1 << 16 ) << ( xCPUID ) ) | portSGI_YIELD_VECTOR_ID )
-//#define portYIELD()		( ( portGIC_READ( portGIC_ICDISPR_BASE( portGIC_DISTRIBUTOR_BASE ) ) & portSGI_YIELD_VECTOR_ID ) == 0UL ? portGIC_WRITE( portGIC_ICDSGIR( portGIC_DISTRIBUTOR_BASE ), portSGI_YIELD( 0 ) ) : (void)portGIC_DISTRIBUTOR_BASE )
+#define portYIELD()		( ( portGIC_READ( portGIC_ICDISPR_BASE( portGIC_DISTRIBUTOR_BASE ) ) & portSGI_YIELD_VECTOR_ID ) == 0UL ? portGIC_WRITE( portGIC_ICDSGIR( portGIC_DISTRIBUTOR_BASE ), portSGI_YIELD( 0 ) ) : (void)portGIC_DISTRIBUTOR_BASE )
 //#define portYIELD()		( ( portGIC_READ( portGIC_ICDSPENDGIR( portGIC_DISTRIBUTOR_BASE ) ) & portSGI_YIELD_VECTOR_ID ) == 0UL ? portGIC_WRITE( portGIC_ICDSGIR( portGIC_DISTRIBUTOR_BASE ), portSGI_YIELD( 0 ) ) : (void)portGIC_DISTRIBUTOR_BASE )
-
+# if 0
 static inline void portYIELD(void)
 {
     if( ( portGIC_READ( portGIC_ICDISPR_BASE( portGIC_DISTRIBUTOR_BASE ) ) & portSGI_YIELD_VECTOR_ID ) == 0UL)
@@ -207,6 +268,7 @@ static inline void portYIELD(void)
         __asm__ __volatile__ ( "nop" ); /* Allow the yield SGI time to propagate. */
     }
 }
+#endif
 #define portSGI_CLEAR_YIELD( pxDistributorBase, xCPUID )	portGIC_WRITE( portGIC_ICDCPENDGIR( pxDistributorBase ), portSGI_YIELD_VECTOR_ID )
 #define portEND_SWITCHING_ISR( xSwitchRequired ) ( (xSwitchRequired) ? portYIELD() : (void)xSwitchRequired )
 

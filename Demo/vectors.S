@@ -31,6 +31,7 @@
 __cs3_start_asm:
     ldr r0, = 100000000
     mcr p15, 0, r0, c14, c0, 0
+
 	LDR			SP, Stack_Addr
 	B			__cs3_start_c
 Stack_Addr:		.word	  __cs3_stack

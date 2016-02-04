@@ -1,6 +1,6 @@
 /*
     FreeRTOS V7.0.1 - Copyright (C) 2011 Real Time Engineers Ltd.
-	
+
 
     ***************************************************************************
      *                                                                       *
@@ -56,11 +56,11 @@
  * space and no display facilities.  The complete version can be found in
  * the Demo/Common/Full directory.
  *
- * As with the full version, the tasks created in this file are a good test 
- * of the scheduler context switch mechanism.  The processor has to access 
- * 32bit variables in two or four chunks (depending on the processor).  The low 
- * priority of these tasks means there is a high probability that a context 
- * switch will occur mid calculation.  See flop. c documentation for 
+ * As with the full version, the tasks created in this file are a good test
+ * of the scheduler context switch mechanism.  The processor has to access
+ * 32bit variables in two or four chunks (depending on the processor).  The low
+ * priority of these tasks means there is a high probability that a context
+ * switch will occur mid calculation.  See flop. c documentation for
  * more information.
  *
  */
@@ -123,6 +123,9 @@ short sTask;
 	{
 		xTaskCreate( vCompeteingIntMathTask, ( signed char * ) "IntMath", intgSTACK_SIZE, ( void * ) &( xTaskCheck[ sTask ] ), uxPriority, ( xTaskHandle * ) NULL );
 	}
+    char str[64];
+    sprintf( str, "[%s]: %d\r\n", __func__, __LINE__ );
+    vSerialPutString(configUART_PORT, str, strlen(str) );
 }
 /*-----------------------------------------------------------*/
 
@@ -138,6 +141,10 @@ volatile signed portBASE_TYPE *pxTaskHasExecuted;
 	iteration.  This is also a good test of the parameter passing mechanism
 	within each port. */
 	pxTaskHasExecuted = ( volatile signed portBASE_TYPE * ) pvParameters;
+    char str[64];
+    sprintf( str, "[%s]: %d\r\n", __func__, __LINE__ );
+    vSerialPutString(configUART_PORT, str, strlen(str) );
+
 
 	/* Keep performing a calculation and checking the result against a constant. */
 	for( ;; )
@@ -156,10 +163,11 @@ volatile signed portBASE_TYPE *pxTaskHasExecuted;
 
 		/* Finish off the calculation. */
 		lValue *= intgCONST3;
+
 		lValue /= intgCONST4;
 
-		/* If the calculation is found to be incorrect we stop setting the 
-		TaskHasExecuted variable so the check task can see an error has 
+		/* If the calculation is found to be incorrect we stop setting the
+		TaskHasExecuted variable so the check task can see an error has
 		occurred. */
 		if( lValue != intgEXPECTED_ANSWER ) /*lint !e774 volatile used to prevent this being optimised out. */
 		{
@@ -171,9 +179,18 @@ volatile signed portBASE_TYPE *pxTaskHasExecuted;
 			/* We have not encountered any errors, so set the flag that show
 			we are still executing.  This will be periodically cleared by
 			the check task. */
+#if 0
+            char str[64];
+            sprintf( str, "[%s]: %s\r\n", __func__, "portENTER_CRITICAL()\n" );
+            vSerialPutString(configUART_PORT, str, strlen(str) );
+#endif
 			portENTER_CRITICAL();
 				*pxTaskHasExecuted = pdTRUE;
 			portEXIT_CRITICAL();
+#if 0
+            sprintf( str, "[%s]: %s\r\n", __func__, "portEXIT_CRITICAL()\n" );
+            vSerialPutString(configUART_PORT, str, strlen(str) );
+#endif
 		}
 
 		/* Yield in case cooperative scheduling is being used. */
@@ -191,8 +208,11 @@ portBASE_TYPE xAreIntegerMathsTaskStillRunning( void )
 {
 portBASE_TYPE xReturn = pdTRUE;
 short sTask;
+    char str[64];
+    sprintf( str, "[%s]: %d\r\n", __func__, __LINE__ );
+    vSerialPutString(configUART_PORT, str, strlen(str) );
 
-	/* Check the maths tasks are still running by ensuring their check variables 
+	/* Check the maths tasks are still running by ensuring their check variables
 	are still being set to true. */
 	for( sTask = 0; sTask < intgNUMBER_OF_TASKS; sTask++ )
 	{

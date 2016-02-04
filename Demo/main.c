@@ -127,6 +127,9 @@ int main( void )
 
 	/* Start the tasks defined within the file. */
 	xTaskCreate( vCheckTask, (const signed char *)"Check", configMINIMAL_STACK_SIZE, NULL, mainCHECK_TASK_PRIORITY, NULL );
+    char str[64];
+    sprintf( str, "[%s]: %d\r\n", __func__, __LINE__ );
+    vSerialPutString(configUART_PORT, str, strlen(str) );
 
 	/* Start the scheduler. */
 	vTaskStartScheduler();
@@ -187,11 +190,13 @@ signed char cBuffer[64];
 			vSerialPutString( mainPRINT_PORT, (const signed char * const)"Fail: Polling Queues\r\n", strlen( "Fail: Polling Queues\r\n" ) );
 		}
 
+
 		if( xAreSemaphoreTasksStillRunning() != pdTRUE )
 		{
 			xErrorOccurred = pdTRUE;
 			vSerialPutString( mainPRINT_PORT, (const signed char * const)"Fail: Sem Tasks\r\n", strlen( "Fail: Sem Tasks\r\n" ) );
 		}
+
 
 		if( xAreBlockingQueuesStillRunning() != pdTRUE )
 		{
@@ -199,11 +204,13 @@ signed char cBuffer[64];
 			vSerialPutString( mainPRINT_PORT, (const signed char * const)"Fail: BlockQ\r\n", strlen( "Fail: BlockQ\r\n" ) );
 		}
 
+
 		if( xAreCountingSemaphoreTasksStillRunning() != pdTRUE )
 		{
 			xErrorOccurred = pdTRUE;
 			vSerialPutString( mainPRINT_PORT, (const signed char * const)"Fail: SemCount\r\n", strlen( "Fail: SemCount\r\n" ) );
 		}
+
 
 		if( xAreDynamicPriorityTasksStillRunning() != pdTRUE )
 		{

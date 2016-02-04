@@ -106,11 +106,10 @@
 #define UART_CLK_HZ				( 3686400UL )
 
 #define UART_FIFO_SIZE_BYTES	( 32UL )
-#define UART0_VECTOR_ID			( 44 )
-#define UART1_VECTOR_ID			( 45 )
-#define UART2_VECTOR_ID			( 46 )
-#define UART3_VECTOR_ID			( 47 )
-#define UART4_VECTOR_ID			( 48 )
+#define UART0_VECTOR_ID			( 37 )
+#define UART1_VECTOR_ID			( 38 )
+#define UART2_VECTOR_ID			( 39 )
+#define UART3_VECTOR_ID			( 40 )
 
 #define TX_QUEUE				( 0 )
 #define RX_QUEUE				( 1 )
