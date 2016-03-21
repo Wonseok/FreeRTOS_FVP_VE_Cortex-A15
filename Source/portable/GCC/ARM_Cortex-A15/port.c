@@ -277,7 +277,7 @@ void vPortSysTickHandler( void *pvParameter )
 	/* Clear the Interrupt. */
     //Clear irq to ? GIC?
 	//*(portSYSTICK_INTERRUPT_STATUS) = 0x01UL;
-#if 1
+#ifdef CONFIG_GENERIC_TIMER
     unsigned long long tval;
     unsigned int ctrl;
     ctrl = read_cntp_ctl();
@@ -296,12 +296,14 @@ void vPortSysTickHandler( void *pvParameter )
 	portEND_SWITCHING_ISR(pdTRUE);
 #endif
 
+#ifdef CONFIG_GENERIC_TIMER
     ctrl = read_cntp_ctl();
     ctrl |= GENERIC_TIMER_CTRL_ENABLE;
     ctrl &= ~GENERIC_TIMER_CTRL_IMASK;
     tval = SCHED_TICK * COUNT_PER_USEC;
     write_cntp_tval(tval);
     write_cntp_ctl(ctrl);
+#endif
 }
 /*-----------------------------------------------------------*/
 
@@ -309,22 +311,58 @@ void vPortSysTickHandler( void *pvParameter )
  * Setup the systick timer to generate the tick interrupts at the required
  * frequency.
  */
+void generic_timer_disable()
+{
+    //unsigned long long tval;
+    unsigned int ctrl;
+    ctrl = read_cntp_ctl();
+    if (ctrl & GENERIC_TIMER_CTRL_ISTATUS) {
+        ctrl |= GENERIC_TIMER_CTRL_IMASK;
+        write_cntp_ctl(ctrl);
+    }
+}
+
+void generic_timer_enable()
+{
+    unsigned long long tval;
+    unsigned int ctrl;
+    ctrl = read_cntp_ctl();
+    ctrl |= GENERIC_TIMER_CTRL_ENABLE;
+    ctrl &= ~GENERIC_TIMER_CTRL_IMASK;
+    tval = SCHED_TICK * COUNT_PER_USEC;
+    write_cntp_tval(tval);
+    write_cntp_ctl(ctrl);
+}
+
+extern void vTimer0InterruptHandler( void *pvParameter );
+extern void vTimer0Initialise( unsigned long ulLoadValue );
+extern void vTimer0Enable();
 void prvSetupTimerInterrupt( void )
 {
-    volatile unsigned long ulValue = 0UL;
-    unsigned int ctrl;
-    signed char cAddress[64];
-    unsigned long long tval;
+    volatile unsigned int ulValue = 2UL;
+    unsigned long init_timer = 0x10;
 
+    signed char cAddress[64];
+
+#ifdef CONFIG_GENERIC_TIMER
+    unsigned int ctrl;
+    unsigned long long tval;
     // Disable Generic Timer
     ctrl = read_cntp_ctl();
     ctrl &= GENERIC_TIMER_CTRL_ENABLE;
     ctrl |= GENERIC_TIMER_CTRL_IMASK;
     write_cntp_ctl(ctrl);
+    //generic_timer_enable();
+#endif
+
+    vTimer0Initialise(init_timer);
+    vTimer0Enable();
 
 	/* Install the interrupt handler. */
-	vPortInstallInterruptHandler( vPortSysTickHandler, NULL, portSYSTICK_VECTOR_ID, pdTRUE, /* configMAX_SYSCALL_INTERRUPT_PRIORITY */ configKERNEL_INTERRUPT_PRIORITY, 1 );
+	//vPortInstallInterruptHandler( vPortSysTickHandler, NULL, portSYSTICK_VECTOR_ID, pdTRUE, /* configMAX_SYSCALL_INTERRUPT_PRIORITY */ configKERNEL_INTERRUPT_PRIORITY, 1 );
+	vPortInstallInterruptHandler( vTimer0InterruptHandler, NULL, 34, pdTRUE, /* configMAX_SYSCALL_INTERRUPT_PRIORITY */ configKERNEL_INTERRUPT_PRIORITY, 1 );
 
+#ifdef CONFIG_GENERIC_TIMER
 	/* Configure SysTick to interrupt at the requested rate. */
     tval = SCHED_TICK * COUNT_PER_USEC;
     write_cntp_tval(tval);
@@ -334,9 +372,6 @@ void prvSetupTimerInterrupt( void )
     ctrl &= ~GENERIC_TIMER_CTRL_IMASK;
     write_cntp_ctl(ctrl);
 
-
-
-#if 1
     ulValue = read_cntpct();
     sprintf( cAddress, "generic_timer value: 0x%8.8lX\r\n", ulValue );
     vSerialPutString(configUART_PORT,cAddress, strlen(cAddress) );
@@ -356,8 +391,10 @@ void prvSetupTimerInterrupt( void )
 }
 /*-----------------------------------------------------------*/
 
+
 void vPortInstallInterruptHandler( void (*vHandler)(void *), void *pvParameter, unsigned long ulVector, unsigned char ucEdgeTriggered, unsigned char ucPriority, unsigned char ucProcessorTargets )
 {
+char str[64];
 unsigned long ulBank32 = 4 * ( ulVector / 32 );
 unsigned long ulOffset32 = ulVector % 32;
 unsigned long ulBank4 = 4 * ( ulVector / 4 );
@@ -386,12 +423,12 @@ unsigned long puxGICDistributorAddress = 0;
 		ulOffset16 = ulVector % 16;
 
 		/* First make the Interrupt a Secure one. */
-	//	*(portGIC_ICDISR_BASE(puxGICDistributorAddress) + ulBank32) &= ~( 1 << ulOffset32 );
+		//*(portGIC_ICDISR_BASE(puxGICDistributorAddress) + ulBank32) &= ~( 1 << ulOffset32 );
 
 		/* Is it Edge Triggered?. */
 		if ( 0 != ucEdgeTriggered )
 		{
-			portGIC_SET( (portGIC_ICDICR_BASE(puxGICDistributorAddress + ulBank16) ), ( portGIC_READ(puxGICDistributorAddress + ulBank16) | ( 0x02 << ( ulOffset16 * 2 ) ) ) );
+            portGIC_SET( (portGIC_ICDICR_BASE(puxGICDistributorAddress + ulBank16) ), ( portGIC_READ( portGIC_ICDICR_BASE(puxGICDistributorAddress + ulBank16)) | ( 0x02 << ( ulOffset16 * 2 ) ) ) );
 		}
 
 		/* Set the Priority. */
@@ -425,7 +462,6 @@ unsigned long ulValue = 0UL;
 
 	/* Query the private address first. */
 	ulVector = portGIC_READ( portGIC_ICCIAR(portGIC_PRIVATE_BASE) );
-
 	if ( portGIC_SPURIOUS_VECTOR == ( ulVector & portGIC_VECTOR_MASK ) )
 	{
 		/* Query the private address first. */
@@ -439,6 +475,7 @@ unsigned long ulValue = 0UL;
         //vSerialPutString(configUART_PORT,cAddress, strlen(cAddress) );
 		/* Call the associated handler. */
 		pxInterruptHandlers[ ( ulVector & portGIC_VECTOR_MASK ) ].vHandler( pxInterruptHandlers[ ( ulVector & portGIC_VECTOR_MASK ) ].pvParameter );
+
 		/* And acknowledge the interrupt. */
 		portGIC_WRITE( portGIC_ICCEOIR(ulGICBaseAddress), ulVector );
 	}

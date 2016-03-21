@@ -129,7 +129,7 @@ extern void vPortClearInterruptMask(portBASE_TYPE);
 	#define portGIC_DISTRIBUTOR_BASE				( 0x2C001000UL )	/* vexpress-a15 */
 	#define portGIC2_BASE							( portGIC_PRIVATE_BASE )	/* vexpress-a15 */
 	#define portGIC2_DISTRIBUTOR_BASE				( portGIC_DISTRIBUTOR_BASE )	/* vexpress-a15 */
-	#define portEXCEPTION_VECTORS_BASE				( 0x80000000UL )
+	#define portEXCEPTION_VECTORS_BASE				( 0x80500000UL )
 	#define portMAX_VECTORS							( 64UL )
 #endif
 
@@ -158,6 +158,9 @@ extern void vPortClearInterruptMask(portBASE_TYPE);
 #define portGIC_ICDSGIR(x)					( ((unsigned long)(x)) + 0xF00UL )
 #define portGIC_ICDCPENDGIR(x)				( ((unsigned long)(x)) + 0xF10UL )
 #define portGIC_ICDSPENDGIR(x)				( ((unsigned long)(x)) + 0xF20UL )
+
+#define __writel(v, a)  (*(volatile unsigned int *)(a) = (v))
+#define __readl(a)      (*(volatile unsigned int *)(a))
 
 /* Macros to access the GIC. */
 #define portGIC_WRITE(address,value)		( *( ( unsigned long * volatile )( address ) ) = ( value ) )
@@ -204,11 +207,15 @@ extern void vPortClearInterruptMask(portBASE_TYPE);
 #define portSYSTICK_CTRL_ENABLE_PERIODIC_INTERRUPTS			  ( 0x00000007 )
 #define portSYSTICK_PRESCALE			( 99 )		/* realview-pbx-a9 */
 //Secure Physical Timer event (ID 29 <= 16 + 13)
-#define portSYSTICK_VECTOR_ID			( 29 )
+//#define portSYSTICK_VECTOR_ID			( 29 )
+#define portSYSTICK_VECTOR_ID_NS		( 30 )
+
+#define portSYSTICK_VECTOR_ID		    ( 34 )
 
 #define GENERIC_TIMER_CTRL_ENABLE       (1 << 0)
 #define GENERIC_TIMER_CTRL_IMASK        (1 << 1)
 #define GENERIC_TIMER_CTRL_ISTATUS      (1 << 2)
+
 /* 100Mhz -> 1 count == 10ns at RTSM_VE_CA15, fast model */
 #define SCHED_TICK  1000
 #define CFG_CNTFRQ  100000000

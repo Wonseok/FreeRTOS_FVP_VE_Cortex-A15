@@ -29,8 +29,8 @@
 
 //Reset_Handler:
 __cs3_start_asm:
-    ldr r0, = 100000000
-    mcr p15, 0, r0, c14, c0, 0
+//    ldr r0, = 100000000
+//    mcr p15, 0, r0, c14, c0, 0
 
 	LDR			SP, Stack_Addr
 	B			__cs3_start_c

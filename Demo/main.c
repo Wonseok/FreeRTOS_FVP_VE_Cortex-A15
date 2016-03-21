@@ -109,6 +109,7 @@ static void prvSetupHardware( void );
 
 int main( void )
 {
+char str[64];
 	/* Initialise the Hardware. */
 	prvSetupHardware();
 
@@ -127,7 +128,6 @@ int main( void )
 
 	/* Start the tasks defined within the file. */
 	xTaskCreate( vCheckTask, (const signed char *)"Check", configMINIMAL_STACK_SIZE, NULL, mainCHECK_TASK_PRIORITY, NULL );
-    char str[64];
     sprintf( str, "[%s]: %d\r\n", __func__, __LINE__ );
     vSerialPutString(configUART_PORT, str, strlen(str) );
 
@@ -270,6 +270,7 @@ signed char cBuffer[64];
 static void prvSetupHardware( void )
 {
 unsigned long ulVector = 0UL;
+    char str[64];
 
 	portDISABLE_INTERRUPTS();
 

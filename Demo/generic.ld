@@ -39,7 +39,7 @@ PROVIDE(__cs3_stack = __cs3_region_start_ram + __cs3_region_size_ram);
 
 SECTIONS
 {
-  . = 0x80000000;
+  . = 0x80500000;
   .text :
   {
 /*    CREATE_OBJECT_SYMBOLS	*/

@@ -1,12 +1,12 @@
 /*
     FreeRTOS V7.0.1 - Copyright (C) 2011 Real Time Engineers Ltd.
-	
+
 
 	FreeRTOS supports many tools and architectures. V7.0.0 is sponsored by:
-	Atollic AB - Atollic provides professional embedded systems development 
-	tools for C/C++ development, code analysis and test automation.  
+	Atollic AB - Atollic provides professional embedded systems development
+	tools for C/C++ development, code analysis and test automation.
 	See http://www.atollic.com
-	
+
 
     ***************************************************************************
      *                                                                       *
@@ -209,7 +209,7 @@ xTIMER *pxNewTimer;
 			/* Ensure the infrastructure used by the timer service task has been
 			created/initialised. */
 			prvCheckForValidListAndQueue();
-	
+
 			/* Initialise the timer structure members using the function parameters. */
 			pxNewTimer->pcTimerName = pcTimerName;
 			pxNewTimer->xTimerPeriodInTicks = xTimerPeriodInTicks;
@@ -217,7 +217,7 @@ xTIMER *pxNewTimer;
 			pxNewTimer->pvTimerID = pvTimerID;
 			pxNewTimer->pxCallbackFunction = pxCallbackFunction;
 			vListInitialiseItem( &( pxNewTimer->xTimerListItem ) );
-			
+
 			traceTIMER_CREATE( pxNewTimer );
 		}
 		else
@@ -225,7 +225,7 @@ xTIMER *pxNewTimer;
 			traceTIMER_CREATE_FAILED();
 		}
 	}
-	
+
 	return ( xTimerHandle ) pxNewTimer;
 }
 /*-----------------------------------------------------------*/
@@ -259,10 +259,10 @@ xTIMER_MESSAGE xMessage;
 		{
 			xReturn = xQueueSendToBackFromISR( xTimerQueue, &xMessage, pxHigherPriorityTaskWoken );
 		}
-		
+
 		traceTIMER_COMMAND_SEND( xTimer, xCommandID, xOptionalValue, xReturn );
 	}
-	
+
 	return xReturn;
 }
 /*-----------------------------------------------------------*/
@@ -320,9 +320,9 @@ portBASE_TYPE xListWasEmpty;
 		/* If a timer has expired, process it.  Otherwise, block this task
 		until either a timer does expire, or a command is received. */
 		prvProcessTimerOrBlockTask( xNextExpireTime, xListWasEmpty );
-		
+
 		/* Empty the command queue. */
-		prvProcessReceivedCommands();		
+		prvProcessReceivedCommands();
 	}
 }
 /*-----------------------------------------------------------*/
@@ -408,7 +408,7 @@ portTickType xTimeNow;
 static portTickType xLastTime = ( portTickType ) 0U;
 
 	xTimeNow = xTaskGetTickCount();
-	
+
 	if( xTimeNow < xLastTime )
 	{
 		prvSwitchTimerLists( xLastTime );
@@ -418,9 +418,9 @@ static portTickType xLastTime = ( portTickType ) 0U;
 	{
 		*pxTimerListsWereSwitched = pdFALSE;
 	}
-	
+
 	xLastTime = xTimeNow;
-	
+
 	return xTimeNow;
 }
 /*-----------------------------------------------------------*/
@@ -431,7 +431,7 @@ portBASE_TYPE xProcessTimerNow = pdFALSE;
 
 	listSET_LIST_ITEM_VALUE( &( pxTimer->xTimerListItem ), xNextExpiryTime );
 	listSET_LIST_ITEM_OWNER( &( pxTimer->xTimerListItem ), pxTimer );
-	
+
 	if( xNextExpiryTime <= xTimeNow )
 	{
 		/* Has the expiry time elapsed between the command to start/reset a
@@ -494,10 +494,10 @@ portTickType xTimeNow;
 		}
 
 		traceTIMER_COMMAND_RECEIVED( pxTimer, xMessage.xMessageID, xMessage.xMessageValue );
-		
+
 		switch( xMessage.xMessageID )
 		{
-			case tmrCOMMAND_START :	
+			case tmrCOMMAND_START :
 				/* Start or restart a timer. */
 				if( prvInsertTimerInActiveList( pxTimer,  xMessage.xMessageValue + pxTimer->xTimerPeriodInTicks, xTimeNow, xMessage.xMessageValue ) == pdTRUE )
 				{
@@ -514,7 +514,7 @@ portTickType xTimeNow;
 				}
 				break;
 
-			case tmrCOMMAND_STOP :	
+			case tmrCOMMAND_STOP :
 				/* The timer has already been removed from the active list.
 				There is nothing to do here. */
 				break;
@@ -531,7 +531,7 @@ portTickType xTimeNow;
 				vPortFree( pxTimer );
 				break;
 
-			default	:			
+			default	:
 				/* Don't expect to get here. */
 				break;
 		}
@@ -548,7 +548,7 @@ portBASE_TYPE xResult;
 
 	/* Remove compiler warnings if configASSERT() is not defined. */
 	( void ) xLastTime;
-	
+
 	/* The tick count has overflowed.  The timer lists must be switched.
 	If there are any timers still referenced from the current timer list
 	then they must have expired and should be processed before the lists

@@ -40,7 +40,7 @@
     WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
     or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
     more details. You should have received a copy of the GNU General Public
-    License and the FreeRTOS license exception along with FreeRTOS; if not it
+    License and the FreeRTOS license exception aint with FreeRTOS; if not it
     can be viewed here: http://www.freertos.org/a00114.html and also obtained
     by writing to Richard Barry, contact details for whom are available on the
     FreeRTOS WEB site.
@@ -62,44 +62,56 @@
 
 //#define TIMER_0_1_BASE		( 0x10011000 )	/* Realview PBX-A9 */
 //#define TIMER_0_1_BASE		( 0x60005000 )	/* nVidia Tegra 2 */
+#define __writel(v, a)  (*(volatile unsigned int  *)(a) = (v))
+#define __readl(a)      (*(volatile unsigned int  *)(a))
+
 #define TIMER_0_1_BASE		( 0x1C110000 )	/* vexpress-a15 */
-#define TIMER_1_LOAD		( ( unsigned long * volatile ) ( TIMER_0_1_BASE + 0x0 ) )	/* Load Register */
-#define TIMER_1_VALUE		( ( unsigned long * volatile ) ( TIMER_0_1_BASE + 0x04 ) )	/* Current Value Register */
-#define TIMER_1_CONTROL		( ( unsigned long * volatile ) ( TIMER_0_1_BASE + 0x08 ) )	/* Control Register */
-#define TIMER_1_INTCLR		( ( unsigned long * volatile ) ( TIMER_0_1_BASE + 0x0C ) )	/* Interrupt Clear Register */
-#define TIMER_1_RIS			( ( unsigned long * volatile ) ( TIMER_0_1_BASE + 0x10 ) )	/* Raw Interrupt Status Register */
-#define TIMER_1_MIS			( ( unsigned long * volatile ) ( TIMER_0_1_BASE + 0x14 ) )	/* Masked Interrupt Status Register */
-#define TIMER_1_BGLOAD		( ( unsigned long * volatile ) ( TIMER_0_1_BASE + 0x18 ) )	/* Background Load Register */
-#define TIMER_2_LOAD		( ( unsigned long * volatile ) ( TIMER_0_1_BASE + 0x20 ) )	/* Load Register */
-#define TIMER_2_VALUE		( ( unsigned long * volatile ) ( TIMER_0_1_BASE + 0x24 ) )	/* Current Value Register */
-#define TIMER_2_CONTROL		( ( unsigned long * volatile ) ( TIMER_0_1_BASE + 0x28 ) )	/* Control Register */
-#define TIMER_2_INTCLR		( ( unsigned long * volatile ) ( TIMER_0_1_BASE + 0x2C ) )	/* Interrupt Clear Register */
-#define TIMER_2_RIS			( ( unsigned long * volatile ) ( TIMER_0_1_BASE + 0x30 ) )	/* Raw Interrupt Status Register */
-#define TIMER_2_MIS			( ( unsigned long * volatile ) ( TIMER_0_1_BASE + 0x34 ) )	/* Masked Interrupt Status Register */
-#define TIMER_2_BGLOAD		( ( unsigned long * volatile ) ( TIMER_0_1_BASE + 0x38 ) )	/* Background Load Register */
+#define TIMER_1_LOAD		(  ( TIMER_0_1_BASE + 0x0 ) )	/* Load Register */
+#define TIMER_1_VALUE		(  ( TIMER_0_1_BASE + 0x04 ) )	/* Current Value Register */
+#define TIMER_1_CONTROL		(  ( TIMER_0_1_BASE + 0x08 ) )	/* Control Register */
+#define TIMER_1_INTCLR		(  ( TIMER_0_1_BASE + 0x0C ) )	/* Interrupt Clear Register */
+#define TIMER_1_RIS			(  ( TIMER_0_1_BASE + 0x10 ) )	/* Raw Interrupt Status Register */
+#define TIMER_1_MIS			(  ( TIMER_0_1_BASE + 0x14 ) )	/* Masked Interrupt Status Register */
+#define TIMER_1_BGLOAD		(  ( TIMER_0_1_BASE + 0x18 ) )	/* Background Load Register */
+#define TIMER_2_LOAD		(  ( TIMER_0_1_BASE + 0x20 ) )	/* Load Register */
+#define TIMER_2_VALUE		(  ( TIMER_0_1_BASE + 0x24 ) )	/* Current Value Register */
+#define TIMER_2_CONTROL		(  ( TIMER_0_1_BASE + 0x28 ) )	/* Control Register */
+#define TIMER_2_INTCLR		(  ( TIMER_0_1_BASE + 0x2C ) )	/* Interrupt Clear Register */
+#define TIMER_2_RIS			(  ( TIMER_0_1_BASE + 0x30 ) )	/* Raw Interrupt Status Register */
+#define TIMER_2_MIS			(  ( TIMER_0_1_BASE + 0x34 ) )	/* Masked Interrupt Status Register */
+#define TIMER_2_BGLOAD		(  ( TIMER_0_1_BASE + 0x38 ) )	/* Background Load Register */
 /*----------------------------------------------------------------------------*/
 
-void vTimer0Initialise( unsigned long ulLoadValue )
+void vTimer0Initialise( unsigned int ulLoadValue )
 {
-	*TIMER_1_LOAD = ulLoadValue;
+	//*TIMER_1_LOAD = ulLoadValue;
+    __writel(ulLoadValue, TIMER_1_LOAD);
 }
 /*----------------------------------------------------------------------------*/
 
 void vTimer0Enable( void )
 {
-	*TIMER_1_CONTROL = 0xE0UL;
+	//*TIMER_1_CONTROL = 0xE0UL;
+    __writel(0xE0, TIMER_1_CONTROL);
 }
 /*----------------------------------------------------------------------------*/
 
 void vTimer0InterruptHandler( void *pvParameter )
 {
 extern void vTaskIncrementTick( void );
-	*TIMER_1_INTCLR = 1;
+	//*TIMER_1_INTCLR = 1;
+    __writel(0x1, TIMER_1_INTCLR);
 
 	vTaskIncrementTick();
 
 #if configUSE_PREEMPTION
 	portEND_SWITCHING_ISR( 1 );
 #endif /* configUSE_PREEMPTION */
+
+#if 0
+    signed char cAddress[64];
+    sprintf( cAddress, "SP804:vTimer0InterruptHandler\r\n");
+    vSerialPutString(configUART_PORT,cAddress, strlen(cAddress) );
+#endif
 }
 /*----------------------------------------------------------------------------*/

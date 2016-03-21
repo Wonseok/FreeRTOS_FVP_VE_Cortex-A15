@@ -10,7 +10,7 @@ C_FILES 	= $(wildcard Demo/*.c) 								 \
 
 OBJS 		:= $(ASM_FILES:.S=.o) $(C_FILES:.c=.o)
 
-BIN			= $(BUILD_DIR)/$(TARGET).bin
+BIN			= $(TARGET).bin
 LD_SCRIPT	= $(PROJECT).lds.S
 OUTPUT 		= $(TARGET).axf
 MAP			= $(PROJECT).map
@@ -30,7 +30,7 @@ LIBS		= /home/wonseok/experiment/arm-2013.05/arm-none-eabi/lib
 CPPFLAGS	= $(CONFIG_FLAG) $(INCLUDES) -nostartfiles $(DEBUG_FLAG)
 CPPFLAGS	+= -Wall
 
-all: $(OBJS) $(OUTPUT) $(MAP)
+all: $(OBJS) $(OUTPUT) $(MAP) $(BIN)
 
 $(MAP): $(OUTPUT)
 	$(NM) $< > $@
